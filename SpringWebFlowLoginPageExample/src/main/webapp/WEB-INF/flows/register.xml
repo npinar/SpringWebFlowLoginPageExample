@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+		http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+	
+	<var name="userInfo" class="com.myjavasolutions.bean.UserInfo" />
+	<var name="userAction" class="com.myjavasolutions.actions.UserRegisterationAction"/>
+	
+	<view-state id="registerUser" view="account/registerForm" model="userInfo">
+		<transition on="submitRegistration" to="validatePassword"/>
+		<transition on="reset" to="registerUser" bind="false">
+			<evaluate expression="userAction.reset(userInfo)"/>
+		</transition>
+		<transition on="cancel" to="cancelRegistration" bind="false">
+			<evaluate expression="userAction.reset(userInfo)"/>
+		</transition>
+	</view-state>
+    
+    <!-- we could validate the password in UserInfo bean validate method instead of here -->
+    <action-state id="validatePassword">
+        <evaluate expression="userAction.validatePassword(userInfo)" />
+        <transition on="yes" to="welcome" />
+        <transition on="no" to="invalidPassword" />
+    </action-state>
+    
+    <!-- invalidLogin jsp I will redirect to  registerUser view-->
+    <view-state id="invalidPassword" view="invalidLogin"/>
+	
+	<end-state id="welcome" view="externalRedirect:contextRelative:/home"/>
+	<end-state id="cancelRegistration" view="externalRedirect:contextRelative:/home"/>
+</flow>

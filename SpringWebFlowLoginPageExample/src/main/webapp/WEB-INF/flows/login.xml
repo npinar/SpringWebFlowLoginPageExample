@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+		http://www.springframework.org/schema/webflow/spring-webflow-2.0.xsd">
+	
+	<var name="loginInfo" class="com.myjavasolutions.bean.LoginInfo"/>
+	<var name="userLoginAction" class="com.myjavasolutions.actions.UserLoginAction"/>
+
+	<input name="accountType"/>
+	<input name="userIsNotExistingMessage"/>
+	
+	<on-start>
+        <evaluate expression="userLoginAction.init(accountType,loginInfo)"/>
+    </on-start>
+	
+	<view-state id="login" view="account/loginForm" model="loginInfo">
+		<transition on="loginUser" to="validateUserId">
+			<evaluate expression="userLoginAction.validateUserEntry(loginInfo, messageContext)"></evaluate>
+			
+		</transition>
+		<transition on="reset" to="login">
+			<evaluate expression="userLoginAction.reset(loginInfo)"></evaluate>
+		</transition>
+	</view-state>
+	
+	 <action-state id="validateUserId">
+        <evaluate expression="userLoginAction.validateUserId(loginInfo, messageContext)"></evaluate>
+        <transition on="yes" to="userLoginedSuccessfully" />
+        <transition on="no" to="userIsNotExisting" />
+    </action-state>
+    
+	<subflow-state id="userIsNotExisting" subflow="registerme">
+		<on-entry>
+           <evaluate expression="userLoginAction.populateUserIsNotExistingMessage()" result="conversationScope.userIsNotExistingMessage" />
+     	 </on-entry>
+		<input name="userIsNotExistingMessage"/>
+	    <transition on="welcome" to="userLoginedSuccessfully"/>
+	    <transition on="cancelRegistration" to="cancel"/>
+	</subflow-state>
+	
+	<end-state id="userLoginedSuccessfully" view="welcome"/>
+	<end-state id="cancel" view="externalRedirect:contextRelative:/home"/>
+	
+</flow>
